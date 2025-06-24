@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análisis de Eficiencia - Algoritmos de Ordenamiento</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .controls {
+            padding: 30px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .control-item {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .control-item label {
+            font-weight: 600;
+            color: #495057;
+        }
+
+        select, input, button {
+            padding: 12px 16px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            min-width: 120px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .results {
+            padding: 30px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .result-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        .result-section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .numbers-display {
+            background: white;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .time-display {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: 600;
+            margin-top: 15px;
+        }
+
+        .chart-container {
+            grid-column: 1 / -1;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #6c757d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .results {
+                grid-template-columns: 1fr;
+            }
+            
+            .control-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Análisis de Eficiencia</h1>
+            <p>Comparador de Algoritmos de Ordenamiento y Búsqueda</p>
+        </div>
+
+        <div class="controls">
+            <div class="control-group">
+                <div class="control-item">
+                    <label for="algoritmo">Algoritmo:</label>
+                    <select id="algoritmo" onchange="cambiarInterfaz()">
+                        <option value="bubble_sort">Bubble Sort</option>
+                        <option value="selection_sort">Selection Sort</option>
+                        <option value="insertion_sort">Insertion Sort</option>
+                        <option value="merge_sort">Merge Sort</option>
+                        <option value="quick_sort">Quick Sort</option>
+                        <option value="busqueda_binaria">Búsqueda Binaria</option>
+                        <option value="busqueda_lineal">Búsqueda Lineal</option>
+                    </select>
+                </div>
+
+                <div class="control-item">
+                    <label for="cantidad">Cantidad de números:</label>
+                    <input type="number" id="cantidad" value="100" min="10" max="10000">
+                </div>
+
+                <div class="control-item">
+                    <label>&nbsp;</label>
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <input type="checkbox" id="permitir-negativos">
+                        <label for="permitir-negativos" style="margin: 0; font-size: 14px;">Permitir negativos</label>
+                    </div>
+                </div>
+
+                <div class="control-item">
+                    <label>&nbsp;</label>
+                    <button onclick="generarNumeros()">Generar</button>
+                </div>
+
+                <div class="control-item" id="busqueda-controls" style="display: none;">
+                    <label for="elemento-buscar">Número a buscar:</label>
+                    <input type="number" id="elemento-buscar" placeholder="Ingresa un número">
+                </div>
+
+                <div class="control-item" id="buscar-boton" style="display: none;">
+                    <label>&nbsp;</label>
+                    <button onclick="buscarElemento()">Buscar</button>
+                </div>
+
+                <div class="control-item">
+                    <label>&nbsp;</label>
+                    <button onclick="compararAlgoritmos()">Comparar Todos</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="results">
+            <div class="result-section">
+                <h3>Números Originales</h3>
+                <div id="numeros-originales" class="numbers-display">
+                    Selecciona un algoritmo y genera números para comenzar...
+                </div>
+            </div>
+
+            <div class="result-section">
+                <h3 id="titulo-derecha">Números Ordenados</h3>
+                <div id="numeros-ordenados" class="numbers-display">
+                    Los números ordenados aparecerán aquí...
+                </div>
+                <div id="tiempo-ejecucion" class="time-display" style="display: none;">
+                    Tiempo: <span id="tiempo-valor">0</span> ms
+                </div>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <h3>Menor es Mejor</h3>
+            <canvas id="eficienciaChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let chart = null;
+        let numerosActuales = [];
+
+        function cambiarInterfaz() {
+            const algoritmo = document.getElementById('algoritmo').value;
+            const busquedaControls = document.getElementById('busqueda-controls');
+            const buscarBoton = document.getElementById('buscar-boton');
+            
+            if (algoritmo === 'busqueda_binaria' || algoritmo === 'busqueda_lineal') {
+                busquedaControls.style.display = 'flex';
+                buscarBoton.style.display = 'flex';
+                document.getElementById('titulo-derecha').textContent = 'Resultado de Búsqueda';
+                document.getElementById('numeros-ordenados').innerHTML = 'Genera números primero y luego busca un elemento...';
+            } else {
+                busquedaControls.style.display = 'none';
+                buscarBoton.style.display = 'none';
+                document.getElementById('titulo-derecha').textContent = 'Números Ordenados';
+                document.getElementById('numeros-ordenados').innerHTML = 'Los números ordenados aparecerán aquí...';
+            }
+        }
+
+        function generarNumeros() {
+            const algoritmo = document.getElementById('algoritmo').value;
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const permitirNegativos = document.getElementById('permitir-negativos').checked;
+
+            if (cantidad < 10 || cantidad > 10000) {
+                alert('La cantidad debe estar entre 10 y 10000');
+                return;
+            }
+
+            // Mostrar loading
+            document.getElementById('numeros-originales').innerHTML = '<div class="loading"><div class="spinner"></div>Generando números...</div>';
+            document.getElementById('numeros-ordenados').innerHTML = '<div class="loading"><div class="spinner"></div>Procesando...</div>';
+            document.getElementById('tiempo-ejecucion').style.display = 'none';
+
+            fetch('/generar_numeros', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    algoritmo: algoritmo,
+                    cantidad: cantidad,
+                    permitir_negativos: permitirNegativos
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Guardar números actuales para búsqueda
+                numerosActuales = data.numeros_originales;
+                
+                // Mostrar números originales
+                document.getElementById('numeros-originales').innerHTML = 
+                    data.numeros_originales.join(', ');
+
+                // Mostrar números ordenados o mensaje para búsqueda
+                if (algoritmo === 'busqueda_binaria' || algoritmo === 'busqueda_lineal') {
+                    document.getElementById('numeros-ordenados').innerHTML = 
+                        'Números generados. Ahora ingresa un número a buscar y haz clic en "Buscar".';
+                } else {
+                    document.getElementById('numeros-ordenados').innerHTML = 
+                        data.numeros_ordenados.join(', ');
+                    
+                    // Mostrar tiempo de ejecución
+                    document.getElementById('tiempo-valor').textContent = data.tiempo_ejecucion;
+                    document.getElementById('tiempo-ejecucion').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la solicitud');
+            });
+        }
+
+        function buscarElemento() {
+            const algoritmo = document.getElementById('algoritmo').value;
+            const elementoBuscar = parseInt(document.getElementById('elemento-buscar').value);
+
+            if (numerosActuales.length === 0) {
+                alert('Primero genera números haciendo clic en "Generar"');
+                return;
+            }
+
+            if (isNaN(elementoBuscar)) {
+                alert('Por favor ingresa un número válido para buscar');
+                return;
+            }
+
+            // Mostrar loading
+            document.getElementById('numeros-ordenados').innerHTML = '<div class="loading"><div class="spinner"></div>Buscando...</div>';
+            document.getElementById('tiempo-ejecucion').style.display = 'none';
+
+            fetch('/buscar_elemento', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    numeros: numerosActuales,
+                    elemento_buscar: elementoBuscar,
+                    algoritmo: algoritmo
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                let resultadoTexto = '';
+                if (data.resultado_busqueda !== -1) {
+                    resultadoTexto = `Elemento ${data.elemento_buscado} encontrado en la posición ${data.resultado_busqueda}`;
+                } else {
+                    resultadoTexto = `Elemento ${data.elemento_buscado} no encontrado`;
+                }
+                
+                document.getElementById('numeros-ordenados').innerHTML = resultadoTexto;
+                
+                // Mostrar tiempo de ejecución
+                document.getElementById('tiempo-valor').textContent = data.tiempo_ejecucion;
+                document.getElementById('tiempo-ejecucion').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al procesar la búsqueda');
+            });
+        }
+
+        function compararAlgoritmos() {
+            const cantidad = parseInt(document.getElementById('cantidad').value);
+            const permitirNegativos = document.getElementById('permitir-negativos').checked;
+
+            if (cantidad < 10 || cantidad > 10000) {
+                alert('La cantidad debe estar entre 10 y 10000');
+                return;
+            }
+
+            // Mostrar loading en el gráfico
+            const chartContainer = document.querySelector('.chart-container');
+            chartContainer.innerHTML = '<h3>Menor es Mejor</h3><div class="loading"><div class="spinner"></div>Comparando algoritmos...</div>';
+
+            fetch('/comparar_algoritmos', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    cantidad: cantidad,
+                    permitir_negativos: permitirNegativos
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                crearGrafico(data, cantidad);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al comparar algoritmos');
+            });
+        }
+
+        function crearGrafico(data, cantidad) {
+            const ctx = document.createElement('canvas');
+            ctx.id = 'eficienciaChart';
+            
+            const chartContainer = document.querySelector('.chart-container');
+            chartContainer.innerHTML = '<h3>Menor es Mejor</h3>';
+            chartContainer.appendChild(ctx);
+
+            const labels = data.map(item => item.algoritmo);
+            const tiempos = data.map(item => item.tiempo);
+
+            if (chart) {
+                chart.destroy();
+            }
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `Tiempo de ejecución (ms) - ${cantidad} elementos`,
+                        data: tiempos,
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.8)',
+                            'rgba(54, 162, 235, 0.8)',
+                            'rgba(255, 206, 86, 0.8)',
+                            'rgba(75, 192, 192, 0.8)',
+                            'rgba(153, 102, 255, 0.8)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(153, 102, 255, 1)'
+                        ],
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tiempo (ms)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Algoritmo'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+
+        // Generar números iniciales al cargar la página
+        window.onload = function() {
+            cambiarInterfaz();
+            generarNumeros();
+        };
+    </script>
+</body>
+</html> 
